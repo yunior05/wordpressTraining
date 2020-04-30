@@ -1,5 +1,62 @@
 <?php
 
+add_action('rest_api_init', 'add_fields');
+
+function add_fields() {
+  register_rest_field('post', 'authorName', array(
+    'get_callback' => function() { return get_author_name(); }
+  ));
+}
+
+function add_route() {
+  register_rest_route('university/v1/', 'search', array( //university/v1/search?keyword=something
+    'methods' => WP_REST_SERVER::READABLE,
+    'callback' => 'universitySearchResults'
+  ));
+}
+
+function universitySearchResults($data) {
+  $mainQuery = new WP_Query(array(
+    'post_type' => array('post', 'page', 'professor', 'event'),
+    's' => sanitize_text_field( $data['keyword'] )
+  ));
+
+  $result = array(
+    'general' => array(),
+    'professors' => array(),
+    'events'
+  );
+
+  while($mainQuery->havePost()) {
+    $mainQuery->the_post();
+
+    if( get_post_type() == 'post' || get_post_type() =='page' ) {
+      array_push($result['general'], array(
+        'title' => get_the_title(),
+        'permalink' => get_the_permalink()
+      ));
+    }
+
+    if( get_post_type() == 'professor') {
+      array_push($result['professors'], array(
+        'title' => get_the_title(),
+        'permalink' => get_the_permalink()
+      ));
+    }
+
+    if( get_post_type() == 'event') {
+      array_push($result['events'], array(
+        'title' => get_the_title(),
+        'permalink' => get_the_permalink()
+      ));
+    }
+
+  }
+
+  return $professorsResult;
+}
+
+
 function page_banner($args = NULL) {
   if(!$args['title']) {
     $args['title'] = get_the_title();

@@ -85,6 +85,10 @@
   </div>
 </div>
 
+<div class="search-hover">
+  Hello
+</div>
+
   <?php get_footer();
 
 ?>
